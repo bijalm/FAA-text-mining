@@ -13,6 +13,7 @@ The following figure, figure 1, is a snippet of the training data provided to us
   
 ![](images/fig1.png)
 ##### Figure 1: Snapshot of training data
+
 After reviewing the provided data and meeting with our Industry Advisor, Mr. Won advised us to break the overall problem into 3 sub-problems: Conflict Classification, Flight Phase Classification, and AHCS Labeling. For each problem, we noticed that there were a handful of data points that occurred far more often than others which resulted in a skewed distribution of data. In order to account for this class imbalance, we took a stratified sampling approach when splitting the data into training data and testing data.  
 
 #### Conflict Classification
@@ -26,9 +27,16 @@ For this task, we need to extract the flight phase of each aircraft involved in 
 
 ![](images/fig3.png)  
 ##### Figure 3: Three different models used to classify flight phases
+
+#### Event Type Classification
+Our next task was event type classification, for which we approached by taking the cleaned narrative data and using a logistic regression model to find the probability of each event occurring. In total, there were 12 event types, with some of the types being more dominant in our data. This wasn’t a multi-label classification problem like the Phase Classification or the ACHS Labeling because the 12 event types are independent from each other and multiple cannot occur within the same flight. The result of the performance is displayed in figure 4, where the model performs really well for the labels that occurred a lot in the data.
+
+
+##### Figure 4: Classification report for the event type prediction model
+
 #### AHCS Labeling
-This task was the most challenging of the three sub-problems. There are 124 different AHCS Labels and they each drastically differ in how often they occur in our data. For example, an AHCS such as “Parallel Runways” occurs a thousand times while an AHCS like “Space Vehicle, Facility” occurs once. This drastic class imbalance in our data makes creating a good model very difficult. As a result, we created a new hierarchical grouping system where we reduced the number of labels to 7 by grouping the old labels under these new general categories. The following figure, figure 4, showcases the difference in performance between a Linear SVC one vs. rest classifier for the 124 AHCS labels and a Linear SVC one vs. rest classifier for the new 7 labels.
+This task was the most challenging of the three sub-problems. There are 124 different AHCS Labels and they each drastically differ in how often they occur in our data. For example, an AHCS such as “Parallel Runways” occurs a thousand times while an AHCS like “Space Vehicle, Facility” occurs once. This drastic class imbalance in our data makes creating a good model very difficult. As a result, we created a new hierarchical grouping system where we reduced the number of labels to 7 by grouping the old labels under these new general categories. The following figure, figure 5, showcases the difference in performance between a Linear SVC one vs. rest classifier for the 124 AHCS labels and a Linear SVC one vs. rest classifier for the new 7 labels.
 
 ![](images/fig4.png)
-##### Figure 4: Model for the 124 Labels (top) vs. model for the new 7 labels (bottom)
+##### Figure 5: Model for the 124 Labels (top) vs. model for the new 7 labels (bottom)
 
