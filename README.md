@@ -40,3 +40,36 @@ This task was the most challenging of the three sub-problems. There are 124 diff
 ![](images/fig5.png)
 ##### Figure 5: Model for the 124 Labels (top) vs. model for the new 7 labels (bottom)
 
+## How To Run The Deliverable
+In order to run and train the models in the ideal environment with all the necessary dependencies, you need to build a docker container using the Dockerfile provided in the Deliverable folder. First, navigate to the deliverable folder and run the following command to build the docker image: 
+```
+docker build -t <desired tag name> -f Dockerfile .
+```
+You can enter your preferred tag name for the docker image. After building the docker image, you can run the container and run the scripts by creating an interactive bash shell with the following command:
+```
+sudo docker run -it <tag name of desired docker image> bash
+```
+This will allocate a tty for the container process and open a bash shell. You will now be able to run the inference and train scripts within the container by simply typing:
+```
+python inference.py
+```
+or 
+```
+python train.py
+```
+
+## Input Format For The Scripts
+### **Inference Script**
+In order to run the inference script, you need to input the path of the CSV file that contains the redacted narratives that you want to classify. The CSV file is expected to have 2 columns: Report Date and Redacted Narratives. The following is an example of the expected format of the CSV file. 
+
+![](images/csv_example.png)
+
+After running the inference script and inputting the path of the CSV file, there will be an option to also make predictions using the various alternate AHCS labeling systems that Mr. Greg Won provided us. These different labeling systems can provided very useful information for graphs and general insight on the trends that are present in the data.<br/>
+After the classification is complete, the script will produce an Excel file, named "Results.xlsx", that contains the models' predictions for Event Type, Conflict (Y/N), Flight Phases, and AHCS Labels for all the narratives in the CSV file. If the user chooses to also classify using the different AHCS Labeling systems, the scripts will produce an additional Excel file, named "NewLabelResults.xlsx", that contains the models' predictions for 3 different AHCS Labeling systems. These files are located in the results folder.
+
+### **Training Script**
+In order to run the train script and retrain the models with new narratives, you need to input the path of the Excel file that contains the training data. The Excel file is expected to have 132 columns: Report Data, Redacted Narratives, Event Type (ADAB Classification), Conflict (Y/N), Phase 1, Phase 2, Phase 3, and 124 columns for 124 different Aerospace Hazard Classification System Taxonomy Labels. The following is an example of the expected format of the Excel file.
+
+![](images/excel_example.png)
+
+After the training is complete, there will be a print out of classification reports for each of the models to demonstrate the performance of each model. The resulting models, TF-IDF vectorizers, and mutli-label binarizers are saved under their respective folders. 
