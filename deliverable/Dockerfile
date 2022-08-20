@@ -12,6 +12,7 @@ COPY vectorizers ./vectorizers
 COPY inference.py ./inference.py
 COPY preprocessing.py ./preprocessing.py
 COPY train.py ./train.py
+COPY ./req.txt /req.txt
 
 RUN pip3 install --no-cache-dir -r /req.txt
 RUN python -m nltk.downloader stopwords

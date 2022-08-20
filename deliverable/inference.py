@@ -20,11 +20,13 @@ def main():
     conflict_model = pickle.load(open('models/conflict_model.pkl', 'rb'))
     phase_model = pickle.load(open('models/phase_model.pkl', 'rb'))
     hazard_model = pickle.load(open('models/hazard_model.pkl', 'rb'))
+    event_model = pickle.load(open('models/event_model.pkl','rb'))
 
     # Load tf-idf vectorizers
     conflict_vectorizer = pickle.load(open('vectorizers/conflict_vectorizer.pkl','rb'))
     phase_vectorizer = pickle.load(open('vectorizers/phase_vectorizer.pkl','rb'))
     hazard_vectorizer = pickle.load(open('vectorizers/hazard_vectorizer.pkl','rb'))
+    event_vectorizer = pickle.load(open('vectorizers/event_vectorizer.pkl','rb'))
 
     # Load multilabel binarizers
     phase_binarizer = pickle.load(open('binarizers/phase_binarizer.pkl','rb'))
@@ -35,19 +37,22 @@ def main():
     conflict_tfidf = conflict_vectorizer.transform(X)
     phase_tfidf = phase_vectorizer.transform(X)
     hazard_tfidf = hazard_vectorizer.transform(X)
+    event_tfidf = event_vectorizer.transform(X)
 
     # Run models for each input
     conflict_results = conflict_model.predict(conflict_tfidf)
     phase_results = phase_model.predict(phase_tfidf)
     hazard_results = hazard_model.predict(hazard_tfidf)
+    event_results = event_model.predict(event_tfidf)
 
     # Inference of results
     conflict_infer = ['Yes' if conflict_results[i] == 0 else 'No' for i in range(len(conflict_results))]
     phases_infer = phase_binarizer.inverse_transform(phase_results)
     hazard_infer = hazard_binarizer.inverse_transform(hazard_results)
+    event_infer = event_results
 
     # Create dataframe of results and export as an Excel sheet
-    dict = {'Cleaned Narratives':narratives,'Conflict (Y/N)(EX TERRAIN)':conflict_infer,'Flight Phases':phases_infer,'AHCS':hazard_infer}
+    dict = {'Cleaned Narratives':narratives,'Event Type (ADAB Classification)':event_infer,'Conflict (Y/N)(EX TERRAIN)':conflict_infer,'Flight Phases':phases_infer,'AHCS':hazard_infer}
     df = pd.DataFrame(dict)
     df.insert(0,"Report Date",data['REPORT DATE'])
     df.to_excel('results/Results.xlsx')

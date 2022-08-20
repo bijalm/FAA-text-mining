@@ -42,18 +42,15 @@ def main():
     miniDf['PHASE 3'] = 'Phase 3: ' + miniDf['PHASE 3']
     miniDf['PHASES'] = miniDf[['PHASE 1','PHASE 2', 'PHASE 3']].values.tolist()
 
-    # Factorize columns
-    df['EVENT TYPE (ADAB CLASSIFICATION)'] = pd.factorize(df['EVENT TYPE (ADAB CLASSIFICATION)'])[0]
+    # Factorize conflict
     df['CONFLICT (Y/N) (EX TERRAIN)'] = pd.factorize(df['CONFLICT (Y/N) (EX TERRAIN)'])[0]
-    df['PHASE 1'] = pd.factorize(df['PHASE 1'])[0]
-    df['PHASE 2'] = pd.factorize(df['PHASE 2'])[0]
-    df['PHASE 3'] = pd.factorize(df['PHASE 3'])[0]
 
     # Intialize TF-IDF vectorizer
     stop_words = stopwords.words('english')
     conflict_tfidf = TfidfVectorizer(min_df=0.05,max_df=0.95,stop_words=stop_words)
     hazard_tfidf = TfidfVectorizer(max_df=0.8, max_features=10000)
     phase_tfidf = TfidfVectorizer(max_df=0.8, max_features=10000)
+    event_tfidf = TfidfVectorizer(min_df=0.05,max_df=0.95,stop_words=stop_words)
     
     # Binarize the mutlilabels for hazards and flight phases
     hazard_multilabel_binarizer = MultiLabelBinarizer()
@@ -65,6 +62,7 @@ def main():
     conflict_y = df['CONFLICT (Y/N) (EX TERRAIN)']
     hazard_y = hazard_multilabel_binarizer.transform(df['Classify'])
     phase_y = phase_multilabel_binarizer.transform(miniDf['PHASES'])
+    event_y = df['EVENT TYPE (ADAB CLASSIFICATION)']
     
     # Split data into training and testing data
     conflict_x_train, conflict_x_test, conflict_y_train, conflict_y_test = train_test_split(narratives, conflict_y, test_size=0.4)
@@ -75,6 +73,7 @@ def main():
     for train_index, test_index in msss.split(narratives, phase_y):
         phase_x_train, phase_x_test = narratives[train_index], narratives[test_index]
         phase_y_train, phase_y_test = phase_y[train_index], phase_y[test_index]
+    event_x_train, event_x_test, event_y_train, event_y_test = train_test_split(narratives,event_y,test_size=0.4)
 
     # Fit data with vectorizer
     conflict_X_train = conflict_tfidf.fit_transform(conflict_x_train)
@@ -83,6 +82,8 @@ def main():
     hazard_X_test = hazard_tfidf.transform(hazard_x_test)
     phase_X_train = phase_tfidf.fit_transform(phase_x_train)
     phase_X_test = phase_tfidf.transform(phase_x_test)
+    event_X_train = event_tfidf.fit_transform(event_x_train)
+    event_X_test = event_tfidf.transform(event_x_test)
 
     # Intialize model and fit it with training data
     conflict_clf = LogisticRegression(max_iter=10000).fit(conflict_X_train, conflict_y_train)
@@ -92,7 +93,11 @@ def main():
     phase_SVC = LinearSVC()
     phase_clf = OneVsRestClassifier(phase_SVC)
     phase_clf.fit(phase_X_train, phase_y_train)
-        
+    event_LR = LogisticRegression(max_iter=10000)
+    event_clf = OneVsRestClassifier(event_LR)
+    event_clf.fit(event_X_train,event_y_train)
+
+    # Evaluating the performce of each model    
     conflict_y_pred = conflict_clf.predict(conflict_X_test)
     print('Accuracy:',accuracy_score(conflict_y_test, conflict_y_pred))
     print(classification_report(conflict_y_test, conflict_y_pred))
@@ -104,6 +109,10 @@ def main():
     phase_y_pred = phase_clf.predict(phase_X_test)
     print('Accuracy:',accuracy_score(phase_y_test, phase_y_pred))
     print(classification_report(phase_y_test, phase_y_pred))
+    
+    event_y_pred = event_clf.predict(event_X_test)
+    print('Accuracy:',accuracy_score(event_y_test,event_y_pred))
+    print(classification_report(event_y_test,event_y_pred))
 
     # Save model, vectorizer, and binarizer
     pickle.dump(conflict_clf, open('models/conflict_model.pkl', 'wb'))
@@ -114,6 +123,8 @@ def main():
     pickle.dump(phase_clf, open('models/phase_model.pkl', 'wb'))
     pickle.dump(phase_tfidf, open('vectorizers/phase_vectorizer.pkl', 'wb'))
     pickle.dump(phase_multilabel_binarizer, open('binarizers/phase_binarizer.pkl', 'wb'))
+    pickle.dump(event_clf,open('models/event_model.pkl','wb'))
+    pickle.dump(event_tfidf,open('vectorizers/event_vectorizer.pkl','wb'))
 
     # Printout of completion
     print('The models have been successfully trained.')
